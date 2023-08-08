@@ -140,14 +140,75 @@ public class StudentForm extends JFrame {
     }
 
     public void deleteStudent() {
+        String ssn = JOptionPane.showInputDialog(this, "Please insert the ssn of the student that you would like to delete");
+        try {
+            PreparedStatement preparedStatement = db.getConnection().prepareStatement("DELETE FROM students WHERE ssn = ?");
+            preparedStatement.setString(1, ssn);
+            int successful = preparedStatement.executeUpdate();
+
+            System.out.println(successful);
+            String message = "";
+            if(successful > 0) {
+                message = "The student has been deleted!";
+            } else {
+                message = "Oppps, unable to delete the student!";
+            }
+
+            JOptionPane.showMessageDialog(this, message);
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
 
     }
     public void searchStudent() {
+        String ssn = JOptionPane.showInputDialog(this, "Please insert the ssn of the student that you're looking for");
+
+        try {
+            PreparedStatement preparedStatement = db.getConnection().prepareStatement("SELECT ssn, firstname, lastname, deptname FROM students LEFT JOIN departments ON students.deptid = departments.deptid WHERE ssn = ?");
+
+            preparedStatement.setString(1, ssn);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            String message = "";
+            if(resultSet.next()) {
+                message += resultSet.getString("ssn") + " " + resultSet.getString("firstname") + " " + resultSet.getString("lastname") + " " + resultSet.getString("deptname");
+            } else {
+                message += "Student not found!";
+            }
+
+            JOptionPane.showMessageDialog(this, message);
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
 
     }
 
     public void viewAll() {
+        int count = 0;
+        ArrayList<String> rowlist = new ArrayList<>();
+        try {
+            Statement statement = db.getConnection().createStatement();
 
+            ResultSet resultSet = statement.executeQuery("SELECT ssn, firstname, lastname, deptname FROM students LEFT JOIN departments ON students.deptid = departments.deptid");
+
+
+            while (resultSet.next()){
+                count++;
+                String data = resultSet.getString("ssn") + " " + resultSet.getString("firstname") + " " + resultSet.getString("lastname") + " " + resultSet.getString("deptname");
+                rowlist.add(data);
+            }
+
+            String message = "There is " + count + " students!";
+            for(String row : rowlist) {
+                message += "\n" + row;
+            }
+
+            JOptionPane.showMessageDialog(this, message);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     public void submitInfo() {
